@@ -8,4 +8,5 @@ interface AuthRepository {
     suspend fun forgotPassword(email: String): Result<Unit>
     suspend fun updatePassword(newPassword: String): Result<Unit>
     suspend fun logout()
+    suspend fun verifyRecoveryCode(email: String, code: String): Result<User>
 }

@@ -14,6 +14,9 @@ interface AuthApi {
     @POST("auth/v1/recover")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<Unit>
 
+    @POST("auth/v1/verify")
+    suspend fun verify(@Body request: VerifyRequest): AuthResponse
+
     @PUT("auth/v1/user")
     suspend fun updateUser(
         @Header("Authorization") token: String,

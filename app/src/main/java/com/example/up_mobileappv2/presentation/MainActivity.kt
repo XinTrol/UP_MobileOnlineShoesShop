@@ -15,8 +15,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.up_mobileappv2.presentation.navigation.Screen
 import com.example.up_mobileappv2.presentation.screen.HomeScreen
+import com.example.up_mobileappv2.presentation.screen.auth.CreateNewPasswordScreen
+import com.example.up_mobileappv2.presentation.screen.auth.ForgotPasswordScreen
 import com.example.up_mobileappv2.presentation.screen.auth.RegisterScreen
 import com.example.up_mobileappv2.presentation.screen.auth.SignInScreen
+import com.example.up_mobileappv2.presentation.screen.auth.VerificationScreen
 
 
 @AndroidEntryPoint
@@ -51,6 +54,16 @@ fun AppNavHost() {
         }
         composable(Screen.Home.route) {
             HomeScreen(navController = navController)
+        }
+        composable(Screen.Verification.route) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            VerificationScreen(navController = navController, email = email)
+        }
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(navController = navController)
+        }
+        composable(Screen.CreateNewPassword.route) {
+            CreateNewPasswordScreen(navController = navController)
         }
     }
 }

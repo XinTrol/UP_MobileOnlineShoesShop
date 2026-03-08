@@ -20,7 +20,8 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signUp(email: String, password: String): Result<User> {
         return try {
             val response = authApi.signUp(SignUpRequest(email, password))
-            response.accessToken.let { tokenManager.saveToken(it) }
+            // Если токен не пришёл – считаем, что требуется подтверждение email, но регистрация прошла
+            response.accessToken?.let { tokenManager.saveToken(it) } ?: tokenManager.clearToken()
             Result.success(response.user.toDomain())
         } catch (e: HttpException) {
             Result.failure(Exception("Ошибка сервера: ${e.code()}"))
@@ -34,7 +35,11 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signIn(email: String, password: String): Result<User> {
         return try {
             val response = authApi.signIn(SignInRequest(email, password))
-            response.accessToken.let { tokenManager.saveToken(it) }
+            // При входе токен должен быть обязательно
+            if (response.accessToken == null) {
+                throw Exception("Сервер не вернул токен доступа")
+            }
+            tokenManager.saveToken(response.accessToken)
             Result.success(response.user.toDomain())
         } catch (e: HttpException) {
             Result.failure(Exception("Неверный email или пароль"))
@@ -74,5 +79,19 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() {
         tokenManager.clearToken()
+    }
+
+    override suspend fun verifyRecoveryCode(email: String, code: String): Result<User> {
+        return try {
+            val response = authApi.verify(VerifyRequest(type = "recovery", token = code, email = email))
+            response.accessToken?.let { tokenManager.saveToken(it) }
+            Result.success(response.user.toDomain())
+        } catch (e: HttpException) {
+            Result.failure(Exception("Неверный код"))
+        } catch (e: IOException) {
+            Result.failure(Exception("Проверьте подключение к интернету"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }
