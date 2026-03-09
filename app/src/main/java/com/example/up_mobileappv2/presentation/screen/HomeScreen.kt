@@ -44,7 +44,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(16.dp)
         ) {
-            // Блок акций
+            // Акции
             if (actions.isNotEmpty()) {
                 item {
                     Text(
@@ -57,7 +57,7 @@ fun HomeScreen(
                 }
             }
 
-            // Блок бестселлеров
+            // Хиты продаж
             if (bestSellers.isNotEmpty()) {
                 item {
                     Text(
@@ -68,6 +68,9 @@ fun HomeScreen(
                 items(bestSellers) { product ->
                     ProductCard(
                         product = product,
+                        onClick = {
+                            // Переход на детали товара (пока нет)
+                        }
                     )
                 }
             }

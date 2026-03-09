@@ -20,9 +20,12 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signUp(email: String, password: String): Result<User> {
         return try {
             val response = authApi.signUp(SignUpRequest(email, password))
-            // Если токен не пришёл – считаем, что требуется подтверждение email, но регистрация прошла
             response.accessToken?.let { tokenManager.saveToken(it) } ?: tokenManager.clearToken()
-            Result.success(response.user.toDomain())
+            // Проверяем наличие user
+            val user = response.user ?: throw Exception("Сервер не вернул данные пользователя")
+            // Сохраняем userId
+            tokenManager.saveUserId(user.id)
+            Result.success(user.toDomain())
         } catch (e: HttpException) {
             Result.failure(Exception("Ошибка сервера: ${e.code()}"))
         } catch (e: IOException) {
@@ -35,12 +38,13 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun signIn(email: String, password: String): Result<User> {
         return try {
             val response = authApi.signIn(SignInRequest(email, password))
-            // При входе токен должен быть обязательно
             if (response.accessToken == null) {
                 throw Exception("Сервер не вернул токен доступа")
             }
             tokenManager.saveToken(response.accessToken)
-            Result.success(response.user.toDomain())
+            val user = response.user ?: throw Exception("Сервер не вернул данные пользователя")
+            tokenManager.saveUserId(user.id)
+            Result.success(user.toDomain())
         } catch (e: HttpException) {
             Result.failure(Exception("Неверный email или пароль"))
         } catch (e: IOException) {
@@ -79,14 +83,19 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() {
         tokenManager.clearToken()
+        // При желании можно также очистить userId, но clearToken уже сбрасывает всё, если хранить в одном месте.
+        // Если userId хранится отдельно, добавьте: tokenManager.clearUserId()
     }
 
     override suspend fun verifyRecoveryCode(email: String, code: String): Result<User> {
         return try {
             val response = authApi.verify(VerifyRequest(type = "recovery", token = code, email = email))
             response.accessToken?.let { tokenManager.saveToken(it) }
-            Result.success(response.user.toDomain())
+            val user = response.user ?: throw Exception("Сервер не вернул данные пользователя")
+            tokenManager.saveUserId(user.id)
+            Result.success(user.toDomain())
         } catch (e: HttpException) {
+            println("Verify error: ${e.response()?.errorBody()?.string()}")
             Result.failure(Exception("Неверный код"))
         } catch (e: IOException) {
             Result.failure(Exception("Проверьте подключение к интернету"))

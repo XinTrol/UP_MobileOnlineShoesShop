@@ -9,7 +9,7 @@ data class AuthResponse(
     @Json(name = "token_type") val tokenType: String?,
     @Json(name = "expires_in") val expiresIn: Int?,
     @Json(name = "refresh_token") val refreshToken: String?,
-    val user: UserDto
+    val user: UserDto? = null
 )
 
 @JsonClass(generateAdapter = true)

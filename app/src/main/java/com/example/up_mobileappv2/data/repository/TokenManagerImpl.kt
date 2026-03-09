@@ -37,4 +37,18 @@ class TokenManagerImpl @Inject constructor(
             preferences.remove(tokenKey)
         }
     }
+
+    private val userIdKey = stringPreferencesKey("user_id")
+
+    override suspend fun saveUserId(userId: String) {
+        context.dataStore.edit { preferences ->
+            preferences[userIdKey] = userId
+        }
+    }
+
+    override suspend fun getUserId(): String? {
+        return context.dataStore.data
+            .map { preferences -> preferences[userIdKey] }
+            .first()
+    }
 }

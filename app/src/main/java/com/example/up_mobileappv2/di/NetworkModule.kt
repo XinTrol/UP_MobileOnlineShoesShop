@@ -21,9 +21,14 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
+
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    val logging = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
 
     @Provides
     @Singleton
@@ -91,9 +96,9 @@ object NetworkModule {
         return retrofit.create(DatabaseApi::class.java)
     }
 
-    // @Provides
-// @Singleton
-// fun provideStorageApi(retrofit: Retrofit): StorageApi {
-//     return retrofit.create(StorageApi::class.java)
-// }
+    @Provides
+    @Singleton
+    fun provideStorageApi(retrofit: Retrofit): StorageApi {
+        return retrofit.create(StorageApi::class.java)
+    }
 }

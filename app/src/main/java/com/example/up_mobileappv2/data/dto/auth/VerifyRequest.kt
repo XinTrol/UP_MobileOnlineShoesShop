@@ -4,7 +4,7 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class VerifyRequest(
-    val type: String,   // "signup" или "recovery"
-    val token: String,  // код из письма
-    val email: String? = null  // иногда требуется для recovery
+    val type: String,
+    val token: String,
+    val email: String? = null
 )

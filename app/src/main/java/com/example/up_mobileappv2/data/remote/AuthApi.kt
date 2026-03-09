@@ -17,6 +17,7 @@ interface AuthApi {
     @POST("auth/v1/verify")
     suspend fun verify(@Body request: VerifyRequest): AuthResponse
 
+
     @PUT("auth/v1/user")
     suspend fun updateUser(
         @Header("Authorization") token: String,

@@ -11,9 +11,8 @@ class AuthInterceptor @Inject constructor(
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
-        // Используем runBlocking для получения токена из suspend-функции.
-        // Внимание: это может заблокировать поток, но в интерцепторе это допустимо.
         val token = runBlocking { tokenManager.getToken() }
+        println("AuthInterceptor: token = $token")
         val requestBuilder = original.newBuilder()
         if (!token.isNullOrBlank()) {
             requestBuilder.header("Authorization", "Bearer $token")

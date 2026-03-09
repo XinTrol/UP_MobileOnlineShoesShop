@@ -2,6 +2,7 @@ package com.example.up_mobileappv2.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.up_mobileappv2.domain.usecase.ForgotPasswordUseCase
 import com.example.up_mobileappv2.domain.usecase.VerifyRecoveryCodeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -14,6 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VerificationViewModel @Inject constructor(
+    private val forgotPasswordUseCase: ForgotPasswordUseCase,
     private val verifyUseCase: VerifyRecoveryCodeUseCase
 ) : ViewModel() {
 
@@ -46,13 +48,10 @@ class VerificationViewModel @Inject constructor(
     }
 
     fun onCodeChange(newCode: String) {
-        // Ограничим длину 6 символов
         if (newCode.length <= 6) {
             _code.value = newCode
             _isCodeInvalid.value = false
         }
-        // Если введено 6 символов, можно автоматически отправить?
-        // По заданию этого нет, но можно сделать кнопку "Подтвердить"
     }
 
     fun onVerifyClick(email: String) {
@@ -74,18 +73,18 @@ class VerificationViewModel @Inject constructor(
     }
 
     fun onResendClick(email: String) {
-        // Повторная отправка кода – используем тот же forgotPasswordUseCase
-        // Для этого нам понадобится useCase или прямой вызов репозитория.
-        // Пока просто перезапустим таймер и отправим запрос.
         viewModelScope.launch {
-            // Предположим, что у нас есть доступ к useCase; но чтобы не усложнять, будем считать, что он есть
-            // Лучше передать useCase в конструктор, но пока упростим – вызовем forgotPassword через другой useCase?
-            // В реальности здесь нужен ResendCodeUseCase или тот же forgotPassword.
-            // Для простоты пока сделаем заглушку: сбрасываем таймер.
-            _canResend.value = false
-            _timerSeconds.value = 60
-            startTimer()
-            // TODO: Вызвать повторную отправку кода
+            _isLoading.value = true
+            val result = forgotPasswordUseCase(email)
+            _isLoading.value = false
+            result.onSuccess {
+                _canResend.value = false
+                _timerSeconds.value = 60
+                startTimer()
+            }.onFailure { exception ->
+                _errorMessage.value = exception.message ?: "Ошибка при повторной отправке"
+                _showErrorDialog.value = true
+            }
         }
     }
 
