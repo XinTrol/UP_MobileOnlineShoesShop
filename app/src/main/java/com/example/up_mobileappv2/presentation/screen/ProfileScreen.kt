@@ -25,7 +25,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.up_mobileappv2.presentation.ui.components.BarcodeGenerator
+import com.example.up_mobileappv2.presentation.navigation.Screen
+import com.example.up_mobileappv2.presentation.ui.components.generateBarcode
 import com.example.up_mobileappv2.presentation.viewmodel.ProfileViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -46,15 +47,14 @@ fun ProfileScreen(
     val photoUrl by viewModel.photoUrl.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val showErrorDialog by viewModel.showErrorDialog.collectAsStateWithLifecycle()
+    val userId by viewModel.userId.collectAsStateWithLifecycle() // добавим в VM
 
     val context = LocalContext.current
 
-    // Launcher для выбора изображения из галереи
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            // Копируем файл во временное хранилище
             val inputStream = context.contentResolver.openInputStream(it)
             val file = File(context.cacheDir, "profile_${System.currentTimeMillis()}.jpg")
             FileOutputStream(file).use { output ->
@@ -64,12 +64,10 @@ fun ProfileScreen(
         }
     }
 
-    // Launcher для камеры
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         bitmap?.let {
-            // Сохраняем Bitmap во временный файл
             val file = File(context.cacheDir, "profile_${System.currentTimeMillis()}.jpg")
             FileOutputStream(file).use { out ->
                 it.compress(Bitmap.CompressFormat.JPEG, 90, out)
@@ -78,34 +76,21 @@ fun ProfileScreen(
         }
     }
 
-    // Состояние диалога выбора источника фото
     var showPhotoDialog by remember { mutableStateOf(false) }
 
-    // Генерация штрих-кода из id пользователя
-    val barcodeBitmap = remember(profile?.userId) {
-        profile?.userId?.let { BarcodeGenerator.generateBarcode(it, 300, 100) }
+    // Генерация штрих-кода
+    val barcodeBitmap = remember(userId) {
+        userId?.let { generateBarcode(it, 400, 100) }
     }
 
-    // Слушаем события навигации
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
             when (event) {
                 ProfileViewModel.NavigationEvent.NavigateToLoyaltyCard -> {
-                    navController.navigate("loyalty_card") // маршрут нужно добавить
+                    navController.navigate(Screen.LoyaltyCard.route)
                 }
             }
         }
-    }
-
-    // Устанавливаем userId, когда профиль загружен (здесь нужно передать извне, пока заглушка)
-    // Например, можно получить из аргументов навигации
-    // Пока просто вызовем setUserId, если его нет
-    // Для демо передадим "test-user-id" (позже заменим на реальный)
-
-    LaunchedEffect(Unit) {
-        // Здесь нужно получить userId, например, из TokenManager или из аргументов
-        // Пока для теста передадим фиктивный
-        // viewModel.setUserId("реальный-id-из-сессии")
     }
 
     Scaffold(
@@ -201,7 +186,6 @@ fun ProfileScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else {
-                        // Отображение данных
                         profile?.let {
                             Text("Имя: ${it.firstName ?: "не указано"}")
                             Text("Фамилия: ${it.lastName ?: "не указано"}")
@@ -228,7 +212,6 @@ fun ProfileScreen(
         }
     }
 
-    // Диалог выбора источника фото
     if (showPhotoDialog) {
         AlertDialog(
             onDismissRequest = { showPhotoDialog = false },
@@ -253,7 +236,6 @@ fun ProfileScreen(
         )
     }
 
-    // Диалог ошибки
     if (showErrorDialog && errorMessage != null) {
         AlertDialog(
             onDismissRequest = viewModel::dismissError,

@@ -19,13 +19,16 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.up_mobileappv2.domain.model.Action
 import com.example.up_mobileappv2.presentation.ui.components.ProductCard
+import com.example.up_mobileappv2.presentation.viewmodel.FavouriteViewModel
 import com.example.up_mobileappv2.presentation.viewmodel.HomeViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    favouriteViewModel: FavouriteViewModel = hiltViewModel()
 ) {
+    val favouriteIds by favouriteViewModel.favouriteIds.collectAsStateWithLifecycle()
     val actions by viewModel.actions.collectAsStateWithLifecycle()
     val bestSellers by viewModel.bestSellers.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -65,12 +68,13 @@ fun HomeScreen(
                         style = MaterialTheme.typography.headlineSmall
                     )
                 }
+
                 items(bestSellers) { product ->
                     ProductCard(
                         product = product,
-                        onClick = {
-                            // Переход на детали товара (пока нет)
-                        }
+                        onClick = { /* переход на детали */ },
+                        isFavourite = product.id in favouriteIds,
+                        onFavouriteClick = { favouriteViewModel.toggleFavourite(product) }
                     )
                 }
             }

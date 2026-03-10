@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.up_mobileappv2.domain.model.Category
 import com.example.up_mobileappv2.domain.model.Product
+import com.example.up_mobileappv2.domain.repository.FavouriteRepository
+import com.example.up_mobileappv2.domain.repository.TokenManager
 import com.example.up_mobileappv2.domain.usecase.GetCategoriesUseCase
 import com.example.up_mobileappv2.domain.usecase.GetProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,8 +17,12 @@ import javax.inject.Inject
 @HiltViewModel
 class CatalogViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val getProductsUseCase: GetProductsUseCase
+    private val getProductsUseCase: GetProductsUseCase,
+    private val favouriteRepository: FavouriteRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
+
+    val favouriteIds = favouriteRepository.favouriteIds
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories = _categories.asStateFlow()
@@ -35,6 +41,25 @@ class CatalogViewModel @Inject constructor(
 
     init {
         loadCategories()
+        loadFavouriteIds()
+    }
+
+    private fun loadFavouriteIds() {
+        viewModelScope.launch {
+            val userId = tokenManager.getUserId() ?: return@launch
+            favouriteRepository.loadFavourites(userId)
+        }
+    }
+
+    fun toggleFavourite(product: Product) {
+        viewModelScope.launch {
+            val userId = tokenManager.getUserId() ?: return@launch
+            if (favouriteIds.value.contains(product.id)) {
+                favouriteRepository.removeFromFavourite(userId, product.id)
+            } else {
+                favouriteRepository.addToFavourite(userId, product.id)
+            }
+        }
     }
 
     fun loadCategories() {
@@ -43,7 +68,6 @@ class CatalogViewModel @Inject constructor(
             try {
                 val cats = getCategoriesUseCase()
                 _categories.value = cats
-                // После загрузки категорий загружаем товары (все или по первой категории)
                 loadProducts(null)
             } catch (e: Exception) {
                 _errorMessage.value = e.message
@@ -57,7 +81,9 @@ class CatalogViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                println("📦 CatalogViewModel.loadProducts: categoryId = $categoryId")
                 val prods = getProductsUseCase(categoryId)
+                println("📦 CatalogViewModel.loadProducts: загружено ${prods.size} товаров")
                 _products.value = prods
                 _selectedCategoryId.value = categoryId
             } catch (e: Exception) {
@@ -69,7 +95,8 @@ class CatalogViewModel @Inject constructor(
     }
 
     fun selectCategory(categoryId: String?) {
-        if (categoryId != _selectedCategoryId.value) {
+        viewModelScope.launch {
+            _selectedCategoryId.value = categoryId
             loadProducts(categoryId)
         }
     }

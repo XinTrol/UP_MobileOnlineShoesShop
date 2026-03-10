@@ -14,6 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.up_mobileappv2.presentation.navigation.Screen
+import com.example.up_mobileappv2.presentation.screen.FavouriteScreen
 import com.example.up_mobileappv2.presentation.screen.HomeScreen
 import com.example.up_mobileappv2.presentation.screen.LoyaltyCardScreen
 import com.example.up_mobileappv2.presentation.screen.MainScreen
@@ -61,6 +62,9 @@ fun AppNavHost() {
                     navController.navigate(Screen.SignIn.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
+                },
+                onNavigateToFavourite = {
+                    navController.navigate(Screen.Favourite.route)
                 }
             )
         }
@@ -76,6 +80,9 @@ fun AppNavHost() {
         }
         composable(Screen.LoyaltyCard.route) {
             LoyaltyCardScreen(navController = navController)
+        }
+        composable(Screen.Favourite.route) {
+            FavouriteScreen(navController = navController)
         }
     }
 }

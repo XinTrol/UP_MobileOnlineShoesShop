@@ -62,8 +62,15 @@ class ProfileViewModel @Inject constructor(
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
+    private val _userId = MutableStateFlow<String?>(null)
+    val userId = _userId.asStateFlow()
+
     init {
-        loadProfile()
+        viewModelScope.launch {
+            val uid = tokenManager.getUserId()
+            _userId.value = uid
+            loadProfile()
+        }
     }
 
     private fun loadProfile() {

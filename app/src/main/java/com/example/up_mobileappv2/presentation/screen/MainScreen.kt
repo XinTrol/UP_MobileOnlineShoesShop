@@ -15,15 +15,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.up_mobileappv2.presentation.navigation.MainTab
-import com.example.up_mobileappv2.presentation.screen.CatalogScreen
-import com.example.up_mobileappv2.presentation.screen.HomeScreen
-import com.example.up_mobileappv2.presentation.screen.ProfileScreen
+import com.example.up_mobileappv2.presentation.navigation.Screen
 import com.example.up_mobileappv2.presentation.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(onLogout: () -> Unit) {
+fun MainScreen(
+    onLogout: () -> Unit,
+    onNavigateToFavourite: () -> Unit
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -33,18 +34,18 @@ fun MainScreen(onLogout: () -> Unit) {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                // Заголовок меню
                 Text("Меню", modifier = Modifier.padding(16.dp))
                 Divider()
-                // Пункты меню
                 NavigationDrawerItem(
                     label = { Text("Профиль") },
                     selected = false,
                     onClick = {
-                        // Закрыть drawer и перейти на Profile (если нужно)
                         navController.navigate(MainTab.Profile.route) {
-                            popUpTo(navController.graph.startDestinationId)
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
                             launchSingleTop = true
+                            restoreState = true
                         }
                         scope.launch { drawerState.close() }
                     },
@@ -54,8 +55,8 @@ fun MainScreen(onLogout: () -> Unit) {
                     label = { Text("Избранное") },
                     selected = false,
                     onClick = {
-                        // Переход на экран избранного (пока нет)
                         scope.launch { drawerState.close() }
+                        onNavigateToFavourite()
                     },
                     icon = { Icon(Icons.Default.Favorite, contentDescription = null) }
                 )
@@ -69,7 +70,8 @@ fun MainScreen(onLogout: () -> Unit) {
                         }
                         scope.launch { drawerState.close() }
                     },
-                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) })
+                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) }
+                )
             }
         }
     ) {
@@ -134,7 +136,6 @@ fun NavGraphBuilder.addMainTab(
     }
 }
 
-// Вспомогательная функция для получения иконки (можно добавить в сам MainTab)
 fun MainTab.icon() = when (this) {
     MainTab.Home -> Icons.Default.Home
     MainTab.Catalog -> Icons.Default.ShoppingCart

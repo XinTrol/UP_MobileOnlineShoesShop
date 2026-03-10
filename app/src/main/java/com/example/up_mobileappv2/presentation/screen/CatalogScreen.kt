@@ -15,13 +15,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.up_mobileappv2.presentation.ui.components.ProductCard
 import com.example.up_mobileappv2.presentation.viewmodel.CatalogViewModel
+import com.example.up_mobileappv2.presentation.viewmodel.FavouriteViewModel
 
 @Composable
 fun CatalogScreen(
     navController: NavController,
-    viewModel: CatalogViewModel = hiltViewModel()
+    viewModel: CatalogViewModel = hiltViewModel(),
+    favouriteViewModel: FavouriteViewModel = hiltViewModel()
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
+    val favouriteIds by favouriteViewModel.favouriteIds.collectAsStateWithLifecycle()
     val products by viewModel.products.collectAsStateWithLifecycle()
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -30,13 +33,11 @@ fun CatalogScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Горизонтальный список категорий
         if (categories.isNotEmpty()) {
             LazyRow(
                 modifier = Modifier.padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Пункт "Все"
                 item {
                     FilterChip(
                         selected = selectedCategoryId == null,
@@ -71,14 +72,13 @@ fun CatalogScreen(
                 items(products) { product ->
                     ProductCard(
                         product = product,
-                        onClick = {
-                            // Переход на детали товара (позже)
-                        }
+                        onClick = { /* переход на детали */ },
+                        isFavourite = product.id in favouriteIds,
+                        onFavouriteClick = { favouriteViewModel.toggleFavourite(product) }
                     )
                 }
             }
         }
     }
 
-    // Обработка ошибок (можно показать Snackbar)
 }

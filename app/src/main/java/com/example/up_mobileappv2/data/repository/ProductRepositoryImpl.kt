@@ -11,11 +11,23 @@ import javax.inject.Singleton
 class ProductRepositoryImpl @Inject constructor(
     private val databaseApi: DatabaseApi
 ) : ProductRepository {
+
     override suspend fun getProducts(categoryId: String?): List<Product> {
-        return databaseApi.getProducts(categoryId = categoryId).map { it.toDomain() }
+        return if (categoryId != null) {
+            // Добавляем оператор eq.
+            databaseApi.getProducts(categoryFilter = "eq.$categoryId")
+        } else {
+            databaseApi.getProducts()
+        }.map { it.toDomain() }
     }
 
     override suspend fun getBestSellers(): List<Product> {
         return databaseApi.getProducts().filter { it.isBestSeller == true }.map { it.toDomain() }
+    }
+
+    override suspend fun getProductsByIds(ids: List<String>): List<Product> {
+        if (ids.isEmpty()) return emptyList()
+        val filter = "in.(${ids.joinToString(",") { "\"$it\"" }})"
+        return databaseApi.getProducts(idFilter = filter).map { it.toDomain() }
     }
 }

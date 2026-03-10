@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.up_mobileappv2.domain.model.Action
 import com.example.up_mobileappv2.domain.model.Product
+import com.example.up_mobileappv2.domain.repository.FavouriteRepository
+import com.example.up_mobileappv2.domain.repository.TokenManager
 import com.example.up_mobileappv2.domain.usecase.GetActionsUseCase
 import com.example.up_mobileappv2.domain.usecase.GetBestSellersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,8 +17,12 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getActionsUseCase: GetActionsUseCase,
-    private val getBestSellersUseCase: GetBestSellersUseCase
+    private val getBestSellersUseCase: GetBestSellersUseCase,
+    private val favouriteRepository: FavouriteRepository,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
+
+    val favouriteIds = favouriteRepository.favouriteIds
 
     private val _actions = MutableStateFlow<List<Action>>(emptyList())
     val actions = _actions.asStateFlow()
@@ -32,6 +38,25 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadData()
+        loadFavouriteIds()
+    }
+
+    private fun loadFavouriteIds() {
+        viewModelScope.launch {
+            val userId = tokenManager.getUserId() ?: return@launch
+            favouriteRepository.loadFavourites(userId)
+        }
+    }
+
+    fun toggleFavourite(product: Product) {
+        viewModelScope.launch {
+            val userId = tokenManager.getUserId() ?: return@launch
+            if (favouriteIds.value.contains(product.id)) {
+                favouriteRepository.removeFromFavourite(userId, product.id)
+            } else {
+                favouriteRepository.addToFavourite(userId, product.id)
+            }
+        }
     }
 
     fun loadData() {

@@ -9,9 +9,10 @@ interface DatabaseApi {
     @GET("rest/v1/products")
     suspend fun getProducts(
         @Query("select") select: String = "*",
-        @Query("category_id") categoryId: String? = null,
+        @Query("category_id") categoryFilter: String? = null,
         @Query("is_best_seller") isBestSeller: Boolean? = null,
-        @Query("order") order: String = "title.asc"
+        @Query("order") order: String = "title.asc",
+        @Query("id") idFilter: String? = null
     ): List<ProductDto>
 
     // Categories
@@ -28,17 +29,17 @@ interface DatabaseApi {
     @GET("rest/v1/favourite")
     suspend fun getFavourites(
         @Query("user_id") userFilter: String,
-        @Query("select") select: String = "*, products(*)"
-    ): List<FavouriteDto>
+        @Query("select") select: String = "*, products!favourite_product_id_fkey(*)"
+    ): Response<List<FavouriteDto>>
 
     @POST("rest/v1/favourite")
-    suspend fun addToFavourite(@Body favourite: FavouriteInsertDto): FavouriteDto
+    suspend fun addToFavourite(@Body favourite: FavouriteInsertDto): Response<Unit>
 
     @DELETE("rest/v1/favourite")
     suspend fun removeFromFavourite(
         @Query("user_id") userFilter: String,
         @Query("product_id") productFilter: String
-    )
+    ): Response<Unit>
 
     @GET("rest/v1/profiles")
     suspend fun getProfile(
