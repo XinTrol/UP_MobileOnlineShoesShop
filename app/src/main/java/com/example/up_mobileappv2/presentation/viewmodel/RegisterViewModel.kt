@@ -20,6 +20,9 @@ class RegisterViewModel @Inject constructor(
     private val _email = MutableStateFlow("")
     val email = _email.asStateFlow()
 
+    private val _name = MutableStateFlow("")
+    val name = _name.asStateFlow()
+
     private val _password = MutableStateFlow("")
     val password = _password.asStateFlow()
 
@@ -47,6 +50,10 @@ class RegisterViewModel @Inject constructor(
         _password.value = newPassword
     }
 
+    fun onNameChange(newName: String) {
+        _name.value = newName
+    }
+
     fun togglePasswordVisibility() {
         _passwordVisible.value = !_passwordVisible.value
     }
@@ -57,6 +64,7 @@ class RegisterViewModel @Inject constructor(
     }
 
     fun register() {
+        val name = _name.value
         val email = _email.value
         val password = _password.value
 
@@ -68,7 +76,7 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isLoading.value = true
-            val result = registerUseCase(email, password)
+            val result = registerUseCase(name,email,password)
             _isLoading.value = false
             result.onSuccess {
                 _navigationEvent.emit(NavigationEvent.NavigateToSignIn)

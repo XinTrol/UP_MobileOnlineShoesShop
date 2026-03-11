@@ -105,7 +105,7 @@ class ProfileViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _errorMessage.value = e.message
-                _showErrorDialog.value = true
+                 _showErrorDialog.value = true
             } finally {
                 _isLoading.value = false
             }
@@ -162,8 +162,7 @@ class ProfileViewModel @Inject constructor(
         )
         viewModelScope.launch {
             _isLoading.value = true
-            // Проверяем, существует ли профиль (по наличию id)
-            val result = if (currentProfile.id.isEmpty()) {
+            val result = if (currentProfile.id.isNullOrEmpty()) {
                 createProfileUseCase(updatedProfile)
             } else {
                 updateProfileUseCase(updatedProfile)

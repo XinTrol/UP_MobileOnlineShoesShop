@@ -1,15 +1,18 @@
 package com.example.up_mobileappv2.presentation.screen.auth
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,56 +48,95 @@ fun ForgotPasswordScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Восстановление пароля") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
+    Scaffold { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "Введите ваш email",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = viewModel::onEmailChange,
-                label = { Text("Email") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = viewModel::onSubmit,
-                enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth()
+            // Кнопка "Назад" в левом верхнем углу
+            IconButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                } else {
-                    Text("Отправить")
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Назад"
+                )
+            }
+
+            // Основной контент по центру
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 80.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                // Заголовок "Забыли Пароль"
+                Text(
+                    text = "Забыл Пароль",
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Подзаголовок
+                Text(
+                    text = "Введите Свою Учетную Запись Для Сброса",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Поле ввода Email
+                // Email
+                TextField(
+                    value = email,
+                    onValueChange = viewModel::onEmailChange,
+                    placeholder = { Text("xyz@gmail.com") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFF1F1F1),
+                        unfocusedContainerColor = Color(0xFFF1F1F1),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Кнопка "Отправить"
+                Button(
+                    onClick = viewModel::onSubmit,
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Blue,
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text("Отправить")
+                    }
                 }
             }
         }
     }
 
+    // Диалог ошибки
     if (showErrorDialog && errorMessage != null) {
         AlertDialog(
             onDismissRequest = viewModel::dismissError,
@@ -106,6 +148,7 @@ fun ForgotPasswordScreen(
         )
     }
 
+    // Диалог успеха
     if (showSuccessDialog) {
         AlertDialog(
             onDismissRequest = viewModel::dismissSuccess,

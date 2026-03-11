@@ -6,6 +6,7 @@ import com.example.up_mobileappv2.data.dto.ProfileUpdateDto
 import com.example.up_mobileappv2.data.mapper.toDomain
 import com.example.up_mobileappv2.data.remote.DatabaseApi
 import com.example.up_mobileappv2.data.remote.StorageApi
+import com.example.up_mobileappv2.data.remote.SupabaseConfig
 import com.example.up_mobileappv2.domain.model.Profile
 import com.example.up_mobileappv2.domain.repository.ProfileRepository
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -91,20 +92,29 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun uploadProfilePhoto(userId: String, file: File): String? {
         return try {
+            println("🟡 uploadProfilePhoto: userId=$userId, file=${file.absolutePath}, size=${file.length()}")
             val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
             val part = MultipartBody.Part.createFormData("file", file.name, requestFile)
             val path = "profiles/$userId/${file.name}"
+            println("🟡 uploadProfilePhoto: bucket=avatars, path=$path")
             val response = storageApi.uploadFile(
                 bucket = "avatars",
                 path = path,
                 file = part
             )
+            println("🟡 uploadProfilePhoto: response code = ${response.code()}")
             if (response.isSuccessful) {
-                "https://your-project.supabase.co/storage/v1/object/public/avatars/$path"
+                val url = "${SupabaseConfig.BASE_URL}/storage/v1/object/public/avatars/$path"
+                println("✅ uploadProfilePhoto success: $url")
+                url
             } else {
+                val error = response.errorBody()?.string()
+                println("❌ uploadProfilePhoto failed: ${response.code()} - $error")
                 null
             }
         } catch (e: Exception) {
+            println("💥 uploadProfilePhoto exception: ${e.message}")
+            e.printStackTrace()
             null
         }
     }

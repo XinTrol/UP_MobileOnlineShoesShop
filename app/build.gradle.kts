@@ -53,6 +53,7 @@ dependencies {
 
     // Hilt
     implementation(libs.google.hilt.android)
+    implementation(libs.androidx.ui)
     kapt(libs.google.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
