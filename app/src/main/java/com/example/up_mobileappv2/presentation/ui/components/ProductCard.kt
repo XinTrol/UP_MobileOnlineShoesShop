@@ -9,7 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.up_mobileappv2.domain.model.Product
@@ -18,49 +20,83 @@ import com.example.up_mobileappv2.domain.model.Product
 fun ProductCard(
     product: Product,
     isFavourite: Boolean,
-    onFavouriteClick: (Boolean) -> Unit,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onFavouriteClick: () -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier.padding(12.dp)
         ) {
-            // Изображение товара (пока заглушка)
-            AsyncImage(
-                model = "https://via.placeholder.com/80",
-                contentDescription = null,
-                modifier = Modifier
-                    .size(80.dp)
-                    .padding(end = 8.dp),
-                contentScale = ContentScale.Crop
-            )
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxSize()
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    AsyncImage(
+                        model = "https://via.placeholder.com/150",
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .aspectRatio(1f),
+                        contentScale = ContentScale.Crop
+                    )
+                    IconButton(
+                        onClick = onFavouriteClick,
+                        modifier = Modifier.align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (isFavourite) Color.Red else Color.Gray
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (product.isBestSeller) {
+                    Text(
+                        text = "BEST SELLER",
+                        color = Color(0xFF4AA3D8),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+
                 Text(
                     text = product.title,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = "${product.cost} ₽",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            IconButton(onClick = { onFavouriteClick(!isFavourite) }) {
-                Icon(
-                    imageVector = if (isFavourite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isFavourite) "Удалить из избранного" else "Добавить в избранное",
-                    tint = if (isFavourite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "₽${product.cost}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    FloatingActionButton(
+                        onClick = { /* добавить в корзину */ },
+                        modifier = Modifier.size(32.dp),
+                        containerColor = Color(0xFF4AA3D8)
+                    ) {
+                        Text("+")
+                    }
+                }
             }
         }
     }

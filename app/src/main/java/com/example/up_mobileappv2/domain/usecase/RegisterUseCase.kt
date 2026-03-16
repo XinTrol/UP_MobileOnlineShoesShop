@@ -11,10 +11,9 @@ private val authRepository: AuthRepository,
 private val profileRepository: ProfileRepository
 ) {
     suspend operator fun invoke(name: String, email: String, password: String): Result<User> {
-        // 1️⃣ Регистрация пользователя
+
         val result = authRepository.signUp(email, password)
 
-        // 2️⃣ Если регистрация успешна — создаем профиль
         return result.onSuccess { user ->
 
             val profile = Profile(
@@ -26,7 +25,6 @@ private val profileRepository: ProfileRepository
                 photo = null
             )
 
-            // Используем рабочий метод репозитория, который работает через ProfileCreateDto
             val profileResult = profileRepository.createProfile(profile)
 
             if (profileResult.isFailure) {

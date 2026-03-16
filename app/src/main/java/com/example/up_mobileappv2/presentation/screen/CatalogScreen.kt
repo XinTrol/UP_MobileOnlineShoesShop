@@ -16,6 +16,12 @@ import androidx.navigation.NavController
 import com.example.up_mobileappv2.presentation.ui.components.ProductCard
 import com.example.up_mobileappv2.presentation.viewmodel.CatalogViewModel
 import com.example.up_mobileappv2.presentation.viewmodel.FavouriteViewModel
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 
 @Composable
 fun CatalogScreen(
@@ -23,62 +29,95 @@ fun CatalogScreen(
     viewModel: CatalogViewModel = hiltViewModel(),
     favouriteViewModel: FavouriteViewModel = hiltViewModel()
 ) {
+
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val favouriteIds by favouriteViewModel.favouriteIds.collectAsStateWithLifecycle()
     val products by viewModel.products.collectAsStateWithLifecycle()
     val selectedCategoryId by viewModel.selectedCategoryId.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .padding(top = 24.dp)
     ) {
-        if (categories.isNotEmpty()) {
-            LazyRow(
-                modifier = Modifier.padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                item {
-                    FilterChip(
-                        selected = selectedCategoryId == null,
-                        onClick = { viewModel.selectCategory(null) },
-                        label = { Text("Все") }
-                    )
-                }
-                items(categories) { category ->
-                    FilterChip(
-                        selected = category.id == selectedCategoryId,
-                        onClick = { viewModel.selectCategory(category.id) },
-                        label = { Text(category.title) }
-                    )
-                }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // HEADER
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, null)
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = categories.firstOrNull { it.id == selectedCategoryId }?.title ?: "Каталог",
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Категории",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+
+            item {
+                FilterChip(
+                    selected = selectedCategoryId == null,
+                    onClick = { viewModel.selectCategory(null) },
+                    label = { Text("Все") }
+                )
+            }
+
+            items(categories) { category ->
+
+                FilterChip(
+                    selected = category.id == selectedCategoryId,
+                    onClick = { viewModel.selectCategory(category.id) },
+                    label = { Text(category.title) }
+                )
+
             }
         }
 
-        // Список товаров
-        if (isLoading && products.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            items(products.size) { index ->
+
+                val product = products[index]
+
+                ProductCard(
+                    product = product,
+                    isFavourite = product.id in favouriteIds,
+                    onFavouriteClick = {
+                        favouriteViewModel.toggleFavourite(product)
+                    },
+                    onClick = { }
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(8.dp)
-            ) {
-                items(products) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { /* переход на детали */ },
-                        isFavourite = product.id in favouriteIds,
-                        onFavouriteClick = { favouriteViewModel.toggleFavourite(product) }
-                    )
-                }
-            }
+
         }
     }
-
 }

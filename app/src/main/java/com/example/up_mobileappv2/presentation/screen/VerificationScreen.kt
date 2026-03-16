@@ -21,7 +21,7 @@ import com.example.up_mobileappv2.presentation.viewmodel.VerificationViewModel
 @Composable
 fun VerificationScreen(
     navController: NavController,
-    email: String, // нужно передать email из предыдущего экрана
+    email: String,
     viewModel: VerificationViewModel = hiltViewModel()
 ) {
     val code by viewModel.code.collectAsStateWithLifecycle()
@@ -52,7 +52,7 @@ fun VerificationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Подтверждение") },
+                title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -70,23 +70,21 @@ fun VerificationScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Введите код из письма",
+                text = "OTP Проверка",
                 style = MaterialTheme.typography.headlineSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Код отправлен на $email",
+                text = "Пожалуйста, Проверьте Свою Электронную Почту ($email), Чтобы Увидеть Код Подтверждения",
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Поле для кода
             OutlinedTextField(
                 value = code,
                 onValueChange = {
                     viewModel.onCodeChange(it)
                     if (it.length == 6) {
-                        // Можно автоматически проверить, но по заданию нужна кнопка
                     }
                 },
                 label = { Text("6-значный код") },
@@ -107,7 +105,6 @@ fun VerificationScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Кнопка подтверждения
             Button(
                 onClick = { viewModel.onVerifyClick(email) },
                 enabled = !isLoading && code.length == 6,
@@ -122,7 +119,6 @@ fun VerificationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Таймер и повторная отправка
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center

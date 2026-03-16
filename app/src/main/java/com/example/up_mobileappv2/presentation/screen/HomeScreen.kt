@@ -1,23 +1,25 @@
 package com.example.up_mobileappv2.presentation.screen
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import com.example.up_mobileappv2.domain.model.Action
+import com.example.up_mobileappv2.presentation.navigation.Screen
 import com.example.up_mobileappv2.presentation.ui.components.ProductCard
 import com.example.up_mobileappv2.presentation.viewmodel.FavouriteViewModel
 import com.example.up_mobileappv2.presentation.viewmodel.HomeViewModel
@@ -29,12 +31,12 @@ fun HomeScreen(
     favouriteViewModel: FavouriteViewModel = hiltViewModel()
 ) {
     val favouriteIds by favouriteViewModel.favouriteIds.collectAsStateWithLifecycle()
-    val actions by viewModel.actions.collectAsStateWithLifecycle()
     val bestSellers by viewModel.bestSellers.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
-    if (isLoading && actions.isEmpty() && bestSellers.isEmpty()) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    if (isLoading && bestSellers.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -42,60 +44,82 @@ fun HomeScreen(
             CircularProgressIndicator()
         }
     } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            // Акции
-            if (actions.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Акции",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
-                item {
-                    ActionsCarousel(actions = actions)
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Хиты продаж
-            if (bestSellers.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Хиты продаж",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
-
-                items(bestSellers) { product ->
-                    ProductCard(
-                        product = product,
-                        onClick = { /* переход на детали */ },
-                        isFavourite = product.id in favouriteIds,
-                        onFavouriteClick = { favouriteViewModel.toggleFavourite(product) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ActionsCarousel(actions: List<Action>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(actions) { action ->
-            AsyncImage(
-                model = action.photoUrl ?: "https://via.placeholder.com/300x150",
-                contentDescription = null,
-                modifier = Modifier
-                    .width(300.dp)
-                    .height(150.dp),
-                contentScale = ContentScale.Crop
+            Text(
+                text = "Главная",
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                placeholder = { Text("Поиск товаров...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                    }
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Популярные товары",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                TextButton(
+                    onClick = {
+                        navController.navigate(Screen.Catalog.route)
+                    }
+                ) {
+                    Text("Все товары")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (bestSellers.isNotEmpty()) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(bestSellers) { product ->
+                        ProductCard(
+                            product = product,
+                            onClick = { /* Переход на детали товара */ },
+                            isFavourite = product.id in favouriteIds,
+                            onFavouriteClick = { favouriteViewModel.toggleFavourite(product) }
+                        )
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Нет популярных товаров")
+                }
+            }
         }
     }
 }
