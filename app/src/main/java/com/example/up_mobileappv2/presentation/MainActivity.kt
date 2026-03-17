@@ -8,9 +8,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.up_mobileappv2.presentation.navigation.Screen
 import com.example.up_mobileappv2.presentation.screen.CatalogScreen
 import com.example.up_mobileappv2.presentation.screen.LoyaltyCardScreen
@@ -26,6 +29,9 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        installSplashScreen()
+
         super.onCreate(savedInstanceState)
         setContent {
             UP_MobileAppV2Theme {
@@ -79,8 +85,15 @@ fun AppNavHost() {
             )
         }
 
-        composable(Screen.LoyaltyCard.route) {
-            LoyaltyCardScreen(navController = navController)
+        composable(
+            route = Screen.LoyaltyCard.route,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            LoyaltyCardScreen(
+                navController = navController,
+                userId = userId
+            )
         }
 
         composable(Screen.Catalog.route) { CatalogScreen(navController) }

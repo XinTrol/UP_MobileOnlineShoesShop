@@ -4,21 +4,24 @@ import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,7 +50,7 @@ fun ProfileScreen(
     val photoUrl by viewModel.photoUrl.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val showErrorDialog by viewModel.showErrorDialog.collectAsStateWithLifecycle()
-    val userId by viewModel.userId.collectAsStateWithLifecycle() // добавим в VM
+    val userId by viewModel.userId.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
 
@@ -78,7 +81,6 @@ fun ProfileScreen(
 
     var showPhotoDialog by remember { mutableStateOf(false) }
 
-    // Генерация штрих-кода
     val barcodeBitmap = remember(userId) {
         userId?.let { generateBarcode(it, 400, 100) }
     }
@@ -96,16 +98,19 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Профиль") },
+                title = { Text(if (isEditing) "Edit Profile" else "Профиль") },
                 actions = {
-                    if (!isEditing) {
-                        IconButton(onClick = viewModel::startEditing) {
-                            Icon(Icons.Default.Edit, contentDescription = "Редактировать")
+                    IconButton(onClick = {
+                        if (isEditing) {
+                            viewModel.saveProfile()
+                        } else {
+                            viewModel.startEditing()
                         }
-                    } else {
-                        IconButton(onClick = viewModel::saveProfile) {
-                            Icon(Icons.Default.Done, contentDescription = "Сохранить")
-                        }
+                    }) {
+                        Icon(
+                            imageVector = if (isEditing) Icons.Default.Done else Icons.Default.Edit,
+                            contentDescription = if (isEditing) "Сохранить" else "Редактировать"
+                        )
                     }
                 }
             )
@@ -123,16 +128,20 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // --- Аватарка ---
                 item {
-                    // Фото профиля
+                    Spacer(modifier = Modifier.height(16.dp))
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clickable { showPhotoDialog = true }
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { showPhotoDialog = true },
+                        contentAlignment = Alignment.Center
                     ) {
                         if (photoUrl != null) {
                             AsyncImage(
@@ -148,70 +157,99 @@ fun ProfileScreen(
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = "Добавить фото",
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .align(Alignment.Center)
+                                modifier = Modifier.size(60.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
 
-                item {
-                    if (isEditing) {
-                        OutlinedTextField(
-                            value = firstName,
-                            onValueChange = viewModel::onFirstNameChange,
-                            label = { Text("Имя") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = lastName,
-                            onValueChange = viewModel::onLastNameChange,
-                            label = { Text("Фамилия") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = address,
-                            onValueChange = viewModel::onAddressChange,
-                            label = { Text("Адрес") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = phone,
-                            onValueChange = viewModel::onPhoneChange,
-                            label = { Text("Телефон") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    } else {
-                        profile?.let {
-                            Text("Имя: ${it.firstName ?: "не указано"}")
-                            Text("Фамилия: ${it.lastName ?: "не указано"}")
-                            Text("Адрес: ${it.address ?: "не указано"}")
-                            Text("Телефон: ${it.phone ?: "не указано"}")
+                // --- Имя и Штрих-код (Только в режиме просмотра) ---
+                if (!isEditing) {
+                    item {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "${profile?.firstName ?: ""} ${profile?.lastName ?: ""}",
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
+                    }
+
+                    item {
+                        barcodeBitmap?.let { bitmap ->
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Штрих-код",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(80.dp)
+                                    .clickable {
+                                        userId?.let { id ->
+                                            navController.navigate(Screen.LoyaltyCard.createRoute(id))
+                                        }
+                                    }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
 
+                // --- Поля данных (Общие для обоих режимов) ---
                 item {
-                    // Штрих-код
-                    barcodeBitmap?.let { bitmap ->
-                        Image(
-                            bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "Штрих-код",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp)
-                                .clickable { viewModel.navigateToLoyaltyCard() }
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        // Имя
+                        OutlinedTextField(
+                            value = if (isEditing) firstName else (profile?.firstName ?: ""),
+                            onValueChange = { if (isEditing) viewModel.onFirstNameChange(it) },
+                            label = { Text("Имя") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = isEditing,
+                            readOnly = !isEditing
                         )
+
+                        // Фамилия
+                        OutlinedTextField(
+                            value = if (isEditing) lastName else (profile?.lastName ?: ""),
+                            onValueChange = { if (isEditing) viewModel.onLastNameChange(it) },
+                            label = { Text("Фамилия") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = isEditing,
+                            readOnly = !isEditing
+                        )
+
+                        // Адрес
+                        OutlinedTextField(
+                            value = if (isEditing) address else (profile?.address ?: ""),
+                            onValueChange = { if (isEditing) viewModel.onAddressChange(it) },
+                            label = { Text("Адрес") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = isEditing,
+                            readOnly = !isEditing
+                        )
+
+                        // Телефон
+                        OutlinedTextField(
+                            value = if (isEditing) phone else (profile?.phone ?: ""),
+                            onValueChange = { if (isEditing) viewModel.onPhoneChange(it) },
+                            label = { Text("Телефон") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = isEditing,
+                            readOnly = !isEditing
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
         }
     }
 
+    // Диалоги
     if (showPhotoDialog) {
         AlertDialog(
             onDismissRequest = { showPhotoDialog = false },

@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+
     <style name="Theme.UP_MobileAppV2" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Тема Splash Screen -->
+    <style name="Theme.App.UP_MobileAppV2" parent="Theme.SplashScreen">
+        <!-- Синий фон -->
+        <item name="windowSplashScreenBackground">#2196F3</item>
+
+        <!-- Иконка (белый круг с логотипом) -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+
+        <!-- Тема, в которую переключится приложение после сплеша -->
+        <item name="postSplashScreenTheme">@style/Theme.UP_MobileAppV2</item>
+    </style>
 </resources>

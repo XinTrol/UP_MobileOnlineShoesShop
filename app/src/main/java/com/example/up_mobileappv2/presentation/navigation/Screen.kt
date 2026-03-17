@@ -19,6 +19,8 @@ sealed class Screen(val route: String) {
     object ProfileTab : Screen("profile_tab")
 
     // Другие полноэкранные экраны
-    object LoyaltyCard : Screen("loyalty_card")
+    object LoyaltyCard : Screen("loyalty_card/{userId}") {
+        fun createRoute(userId: String) = "loyalty_card/$userId"
+    }
     object Catalog : Screen("catalog")
 }
