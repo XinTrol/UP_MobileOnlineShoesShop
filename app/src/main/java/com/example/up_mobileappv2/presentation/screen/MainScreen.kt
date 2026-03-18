@@ -50,7 +50,6 @@ fun MainScreen(
                 ) {
                     Spacer(Modifier.height(40.dp))
 
-                    // Фото профиля
                     if (profile?.photo != null) {
                         AsyncImage(
                             model = profile!!.photo,
@@ -136,7 +135,10 @@ fun MainScreen(
                 TopAppBar(
                     title = { Text("UP Shoe Store") },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        IconButton(onClick = {
+                            viewModel.refreshProfile()
+                            scope.launch { drawerState.open() }
+                        }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }
                     }
@@ -189,7 +191,12 @@ fun BottomNavigationBar(navController: NavHostController) {
                     }
                 },
                 icon = { Icon(icon, contentDescription = title) },
-                label = { Text(title) }
+                label = { Text(title) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = Color(0xFF4DA3C7),
+                    indicatorColor = Color(0xFF4DA3C7)
+                )
             )
         }
     }

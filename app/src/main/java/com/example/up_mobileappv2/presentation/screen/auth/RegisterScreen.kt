@@ -1,6 +1,5 @@
 package com.example.up_mobileappv2.presentation.screen.auth
 
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,22 +29,35 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
-
     val email by viewModel.email.collectAsStateWithLifecycle()
     val password by viewModel.password.collectAsStateWithLifecycle()
+    val name by viewModel.name.collectAsStateWithLifecycle()  // используем имя из VM
     val passwordVisible by viewModel.passwordVisible.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val showErrorDialog by viewModel.showErrorDialog.collectAsStateWithLifecycle()
 
-    var name by remember { mutableStateOf("") }
     var agree by remember { mutableStateOf(false) }
+
+    // Навигация после успешной регистрации
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { event ->
+            when (event) {
+                RegisterViewModel.NavigationEvent.NavigateToSignIn -> {
+                    navController.navigate(Screen.SignIn.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center
     ) {
-
         Text(
             text = "Регистрация",
             style = MaterialTheme.typography.headlineMedium,
@@ -67,7 +79,7 @@ fun RegisterScreen(
         Text("Ваше имя")
         TextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = viewModel::onNameChange,  // теперь через VM
             placeholder = { Text("xxxxxxxx") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -132,12 +144,10 @@ fun RegisterScreen(
 
         // Чекбокс
         Row(verticalAlignment = Alignment.CenterVertically) {
-
             Checkbox(
                 checked = agree,
                 onCheckedChange = { agree = it }
             )
-
             Text(
                 text = "Даю согласие на обработку\nперсональных данных"
             )
@@ -153,11 +163,8 @@ fun RegisterScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-
             if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp)
-                )
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
             } else {
                 Text("Зарегистрироваться")
             }
@@ -175,5 +182,17 @@ fun RegisterScreen(
                 Text("Есть аккаунт? Войти")
             }
         }
+    }
+
+    // Диалог с ошибкой
+    if (showErrorDialog && errorMessage != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissError,
+            title = { Text("Ошибка") },
+            text = { Text(errorMessage!!) },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissError) { Text("OK") }
+            }
+        )
     }
 }

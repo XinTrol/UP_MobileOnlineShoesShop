@@ -37,6 +37,16 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun refreshProfile() {
+        viewModelScope.launch {
+            val userId = tokenManager.getUserId()
+            if (userId != null) {
+                val profile = profileRepository.getProfile(userId)
+                _profile.value = profile
+            }
+        }
+    }
+
     fun logout(onComplete: () -> Unit) {
         viewModelScope.launch {
             authRepository.logout()

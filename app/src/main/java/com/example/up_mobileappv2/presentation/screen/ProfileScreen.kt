@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
@@ -209,6 +210,7 @@ fun ProfileScreen(
                             label = { Text("Имя") },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = isEditing,
+                            shape = RoundedCornerShape(16.dp),
                             readOnly = !isEditing
                         )
 
@@ -219,6 +221,7 @@ fun ProfileScreen(
                             label = { Text("Фамилия") },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = isEditing,
+                            shape = RoundedCornerShape(16.dp),
                             readOnly = !isEditing
                         )
 
@@ -229,6 +232,7 @@ fun ProfileScreen(
                             label = { Text("Адрес") },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = isEditing,
+                            shape = RoundedCornerShape(16.dp),
                             readOnly = !isEditing
                         )
 
@@ -239,6 +243,7 @@ fun ProfileScreen(
                             label = { Text("Телефон") },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = isEditing,
+                            shape = RoundedCornerShape(16.dp),
                             readOnly = !isEditing
                         )
 

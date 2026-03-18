@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -30,11 +29,12 @@ fun SignInScreen(
     navController: NavController,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
-
     val email by viewModel.email.collectAsStateWithLifecycle()
     val password by viewModel.password.collectAsStateWithLifecycle()
     val passwordVisible by viewModel.passwordVisible.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val showErrorDialog by viewModel.showErrorDialog.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
@@ -42,11 +42,9 @@ fun SignInScreen(
                 SignInViewModel.NavigationEvent.NavigateToHome -> {
                     navController.navigate(Screen.Home.route)
                 }
-
                 SignInViewModel.NavigationEvent.NavigateToForgotPassword -> {
                     navController.navigate(Screen.ForgotPassword.route)
                 }
-
                 SignInViewModel.NavigationEvent.NavigateToRegister -> {
                     navController.navigate(Screen.Register.route)
                 }
@@ -57,7 +55,6 @@ fun SignInScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-
         // Кнопка назад
         IconButton(
             onClick = { navController.popBackStack() },
@@ -74,7 +71,6 @@ fun SignInScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Text(
                 text = "Привет!",
                 style = MaterialTheme.typography.headlineMedium,
@@ -164,7 +160,7 @@ fun SignInScreen(
                 onClick = viewModel::signIn,
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(
-                  containerColor = Color.Blue,
+                    containerColor = Color.Blue,
                     contentColor = Color.White
                 ),
                 modifier = Modifier
@@ -172,11 +168,8 @@ fun SignInScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
-
                 if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp)
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 } else {
                     Text("Войти")
                 }
@@ -194,5 +187,17 @@ fun SignInScreen(
                 }
             }
         }
+    }
+
+    // Диалог с ошибкой
+    if (showErrorDialog && errorMessage != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissError,
+            title = { Text("Ошибка") },
+            text = { Text(errorMessage!!) },
+            confirmButton = {
+                TextButton(onClick = viewModel::dismissError) { Text("OK") }
+            }
+        )
     }
 }

@@ -1,6 +1,7 @@
-package com.example.up_mobileappv2.presentation.screen.auth
+package com.example.up_mobileappv2.presentation.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -71,32 +73,58 @@ fun CreateNewPasswordScreen(
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            OutlinedTextField(
+            // Поле для нового пароля
+            TextField(
                 value = password,
                 onValueChange = viewModel::onPasswordChange,
-                label = { Text("Новый пароль") },
-                singleLine = true,
+                placeholder = { Text("••••••••") },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder
                     IconButton(onClick = viewModel::togglePasswordVisibility) {
-                        Icon(imageVector = image, contentDescription = null)
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = null
+                        )
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFFF2F2F2),
+                    unfocusedContainerColor = Color(0xFFF2F2F2),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
+            // Поле для подтверждения пароля (исправлено)
+            TextField(
                 value = confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChange,
-                label = { Text("Подтвердите пароль") },
-                singleLine = true,
+                placeholder = { Text("••••••••") },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = viewModel::togglePasswordVisibility) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = null
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                modifier = Modifier.fillMaxWidth()
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFFF2F2F2),
+                    unfocusedContainerColor = Color(0xFFF2F2F2),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(

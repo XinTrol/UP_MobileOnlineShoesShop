@@ -18,7 +18,7 @@ import com.example.up_mobileappv2.presentation.navigation.Screen
 import com.example.up_mobileappv2.presentation.screen.CatalogScreen
 import com.example.up_mobileappv2.presentation.screen.LoyaltyCardScreen
 import com.example.up_mobileappv2.presentation.screen.MainScreen
-import com.example.up_mobileappv2.presentation.screen.auth.CreateNewPasswordScreen
+import com.example.up_mobileappv2.presentation.screen.CreateNewPasswordScreen
 import com.example.up_mobileappv2.presentation.screen.auth.ForgotPasswordScreen
 import com.example.up_mobileappv2.presentation.screen.auth.RegisterScreen
 import com.example.up_mobileappv2.presentation.screen.auth.SignInScreen
