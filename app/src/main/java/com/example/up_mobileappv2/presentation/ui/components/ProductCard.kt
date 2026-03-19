@@ -1,5 +1,6 @@
 package com.example.up_mobileappv2.presentation.ui.components
 
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -11,9 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.up_mobileappv2.domain.model.Product
 
 @Composable
@@ -23,6 +26,7 @@ fun ProductCard(
     onFavouriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
+
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
@@ -42,12 +46,18 @@ fun ProductCard(
                         .weight(1f)
                 ) {
                     AsyncImage(
-                        model = "https://via.placeholder.com/150",
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(product.productUrl ?: product.productUrl) // в зависимости от выбора
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize()
                             .aspectRatio(1f),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Crop,
+                        onError = { error ->
+                        },
+                        onLoading = {  }
                     )
                     IconButton(
                         onClick = onFavouriteClick,

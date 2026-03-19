@@ -10,5 +10,6 @@ data class ProductDto(
     @Json(name = "category_id") val categoryId: String?,
     val cost: Double,
     val description: String,
-    @Json(name = "is_best_seller") val isBestSeller: Boolean? = false
+    @Json(name = "is_best_seller") val isBestSeller: Boolean? = false,
+    @Json(name = "product_url") val productUrl: String?
 )

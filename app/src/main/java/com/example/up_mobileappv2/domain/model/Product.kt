@@ -6,5 +6,6 @@ data class Product(
     val categoryId: String?,
     val cost: Double,
     val description: String,
-    val isBestSeller: Boolean = false
+    val isBestSeller: Boolean = false,
+    val productUrl: String?
 )

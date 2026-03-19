@@ -10,6 +10,7 @@ fun ProductDto.toDomain(): Product {
         categoryId = categoryId,
         cost = cost,
         description = description,
-        isBestSeller = isBestSeller ?: false
+        isBestSeller = isBestSeller ?: false,
+        productUrl = productUrl
     )
 }
